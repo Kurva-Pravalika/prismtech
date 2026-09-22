@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>CivicPulse — Smart Community Safety</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Standalone Login Flow Overlay */
+    #civicpulse-login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: radial-gradient(circle at 15% 15%, rgba(54, 213, 180, 0.09) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(71, 118, 255, 0.12) 0%, transparent 50%),
+        #080d18;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #eaf0f8;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      overflow-y: auto;
+    }
+
+    #civicpulse-login-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .flow-wrapper {
+      width: 100%;
+      max-width: 1040px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .gateway-header {
+      text-align: center;
+      margin-bottom: 34px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .gateway-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #9cb1ce;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #36d5b4;
+      box-shadow: 0 0 10px #36d5b4;
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.35);
+        opacity: 0.6;
+      }
+    }
+
+    .gateway-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0;
+      background: linear-gradient(135deg, #ffffff 40%, #a4b8d5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gateway-subtitle {
+      font-size: 14px;
+      color: #7e8fa6;
+      margin-top: 6px;
+    }
+
+    /* VIEW 1: TWO BIG PORTAL BOXES */
+    #portal-select-view {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .boxes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      width: 100%;
+    }
+
+    @media (max-width: 840px) {
+      .boxes-grid {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+      }
+    }
+
+    .portal-card {
+      background: rgba(12, 20, 34, 0.85);
+      border-radius: 26px;
+      padding: 38px 30px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      text-align: left;
+    }
+
+    .portal-card:hover {
+      transform: translateY(-6px);
+    }
+
+    /* Citizen Portal Card */
+    .citizen-portal {
+      border: 1px solid rgba(54, 213, 180, 0.25);
+    }
+
+    .citizen-portal:hover {
+      border-color: rgba(54, 213, 180, 0.6);
+      box-shadow: 0 30px 70px rgba(54, 213, 180, 0.15), inset 0 1px 0 rgba(54, 213, 180, 0.4);
+    }
+
+    /* Authority Portal Card */
+    .authority-portal {
+      border: 1px solid rgba(71, 118, 255, 0.25);
+    }
+
+    .authority-portal:hover {
+      border-color: rgba(71, 118, 255, 0.6);
+      box-shadow: 0 30px 70px rgba(71, 118, 255, 0.18), inset 0 1px 0 rgba(71, 118, 255, 0.4);
+    }
+
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+
+    .citizen-portal .card-icon {
+      background: linear-gradient(135deg, #133a33, #18483f);
+      color: #36d5b4;
+      border: 1px solid rgba(54, 213, 180, 0.3);
+    }
+
+    .authority-portal .card-icon {
+      background: linear-gradient(135deg, #192748, #223769);
+      color: #6b8dff;
+      border: 1px solid rgba(71, 118, 255, 0.3);
+    }
+
+    .card-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .citizen-portal .card-tag {
+      color: #36d5b4;
+    }
+
+    .authority-portal .card-tag {
+      color: #6b8dff;
+    }
+
+    .portal-card h2 {
+      font-family: 'Manrope', sans-serif;
+      font-size: 24px;
+      margin: 0 0 10px;
+      color: #ffffff;
+    }
+
+    .portal-card p {
+      font-size: 13px;
+      color: #8b9bb3;
+      line-height: 1.6;
+      margin: 0 0 26px;
+      flex: 1;
+    }
+
+    .card-cta-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .citizen-portal .card-cta-btn {
+      background: linear-gradient(135deg, #36d5b4, #2a8bff);
+      box-shadow: 0 8px 24px rgba(54, 213, 180, 0.25);
+    }
+
+    .authority-portal .card-cta-btn {
+      background: linear-gradient(135deg, #4776ff, #9055ff);
+      box-shadow: 0 8px 24px rgba(71, 118, 255, 0.3);
+    }
+
+    .card-features {
+      display: flex;
+      gap: 6px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .card-feature {
+      font-size: 11px;
+      color: #64768d;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* VIEW 2 & 3: DEDICATED LOGIN PAGES */
+    .login-page-view {
+      display: none;
+      width: 100%;
+      max-width: 440px;
+      animation: cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .login-page-view.active {
+      display: block;
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .back-nav-btn {
+      background: none;
+      border: none;
+      color: #8da1b9;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .back-nav-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .login-form-card {
+      background: rgba(12, 20, 34, 0.9);
+      border-radius: 26px;
+      padding: 34px 28px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .citizen-login-card {
+      border: 1px solid rgba(54, 213, 180, 0.35);
+    }
+
+    .authority-login-card {
+      border: 1px solid rgba(71, 118, 255, 0.35);
+    }
+
+    .login-form-head {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .login-form-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .citizen-login-card .login-form-icon {
+      background: linear-gradient(135deg, #133a33, #18483f);
+      color: #36d5b4;
+      border: 1px solid rgba(54, 213, 180, 0.3);
+    }
+
+    .authority-login-card .login-form-icon {
+      background: linear-gradient(135deg, #192748, #223769);
+      color: #6b8dff;
+      border: 1px solid rgba(71, 118, 255, 0.3);
+    }
+
+    .login-form-head h2 {
+      font-family: 'Manrope', sans-serif;
+      font-size: 22px;
+      margin: 0 0 4px;
+      color: #ffffff;
+    }
+
+    .login-form-head p {
+      font-size: 13px;
+      color: #7e8fa6;
+      margin: 0;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+
+    .input-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b9bb3;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-field {
+      width: 100%;
+      box-sizing: border-box;
+      background: #08101b;
+      border: 1px solid #1a2a3e;
+      border-radius: 11px;
+      color: #ffffff;
+      padding: 12px 14px;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .citizen-login-card .input-field:focus {
+      border-color: #36d5b4;
+      box-shadow: 0 0 0 3px rgba(54, 213, 180, 0.15);
+    }
+
+    .authority-login-card .input-field:focus {
+      border-color: #4776ff;
+      box-shadow: 0 0 0 3px rgba(71, 118, 255, 0.15);
+    }
+
+    select.input-field {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237e8fa6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+      transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .citizen-btn {
+      background: linear-gradient(135deg, #36d5b4, #2a8bff);
+      box-shadow: 0 8px 20px rgba(54, 213, 180, 0.25);
+    }
+
+    .authority-btn {
+      background: linear-gradient(135deg, #4776ff, #9055ff);
+      box-shadow: 0 8px 20px rgba(71, 118, 255, 0.3);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: #4a5a70;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 12px 0;
+      letter-spacing: 1px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #192739;
+    }
+
+    .divider span {
+      padding: 0 10px;
+    }
+
+    .demo-btn {
+      width: 100%;
+      padding: 11px;
+      background: #09121f;
+      border: 1px solid #1c2b3e;
+      border-radius: 11px;
+      color: #8da1b9;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .demo-btn:hover {
+      background: #111e31;
+      color: #ffffff;
+      border-color: #2c4260;
+    }
+
+    /* Directing Feedback Banner */
+    #login-status-msg {
+      display: none;
+      width: 100%;
+      max-width: 440px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    #login-status-msg.success {
+      display: block;
+      background: rgba(54, 213, 180, 0.15);
+      border: 1px solid #36d5b4;
+      color: #36d5b4;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Standalone Flow: Two Boxes Selection -> Click Box -> Dedicated Login Page -> Home Page -->
+  <div id="civicpulse-login-overlay">
+    <div class="flow-wrapper">
+
+      <!-- STAGE 1: TWO SEPARATE BIG PORTAL BOXES -->
+      <div id="portal-select-view">
+        <div class="gateway-header">
+          <div class="gateway-badge">
+            <span class="pulse-dot"></span>
+            <span>Civic Community Gateway</span>
+          </div>
+          <h1 class="gateway-title">CivicPulse</h1>
+          <div class="gateway-subtitle">Click a portal box below to open the login page</div>
+        </div>
+
+        <div class="boxes-grid">
+          <!-- BIG BOX 1: CITIZEN PORTAL BOX -->
+          <div class="portal-card citizen-portal" onclick="openLoginPage('citizen')">
+            <div class="card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <span class="card-tag">Citizen Access</span>
+            <h2>Citizen Portal</h2>
+            <p>Report municipal hazards, track issue resolutions live, and view community safety alerts & risk map.</p>
+            <button class="card-cta-btn" type="button">
+              Login as Citizen
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+            <div class="card-features">
+              <span class="card-feature">🚨 Report Issues</span>
+              <span class="card-feature">🗺️ Live Risk Map</span>
+              <span class="card-feature">📡 Offline-First</span>
+            </div>
+          </div>
+
+          <!-- BIG BOX 2: AUTHORITY COMMAND BOX -->
+          <div class="portal-card authority-portal" onclick="openLoginPage('authority')">
+            <div class="card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <span class="card-tag">Official Command</span>
+            <h2>Authority Command Center</h2>
+            <p>Operations center for dispatch teams, departmental domain assignment, and safety issue resolution.</p>
+            <button class="card-cta-btn" type="button">
+              Login as Authority
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+            <div class="card-features">
+              <span class="card-feature">🏛️ Domain Assignment</span>
+              <span class="card-feature">⚡ Team Dispatch</span>
+              <span class="card-feature">📊 Priority Queue</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 2: CITIZEN LOGIN PAGE -->
+      <div id="citizen-login-view" class="login-page-view">
+        <button class="back-nav-btn" onclick="backToPortalSelect()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Back to Portals
+        </button>
+
+        <div class="login-form-card citizen-login-card">
+          <div class="login-form-head">
+            <div class="login-form-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <h2>Citizen Login</h2>
+            <p>Welcome back to CivicPulse Citizen Portal</p>
+          </div>
+
+          <div id="citizen-status-msg" style="display:none;" class="success"></div>
+
+          <form onsubmit="handleLoginSubmit(event, 'citizen')">
+            <div class="input-group">
+              <label>Full Name</label>
+              <input type="text" id="citizen-name" class="input-field" placeholder="e.g. Rahul Sharma"
+                value="Citizen User" required />
+            </div>
+            <div class="input-group">
+              <label>Mobile Number or Email</label>
+              <input type="text" id="citizen-contact" class="input-field" placeholder="e.g. +91 98765 43210"
+                value="citizen@civicpulse.org" required />
+            </div>
+            <div class="input-group">
+              <label>Password</label>
+              <input type="password" class="input-field" placeholder="••••••••" value="password123" required />
+            </div>
+            <button type="submit" class="submit-btn citizen-btn">
+              Sign In to Citizen Home
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+            <div class="divider"><span>OR</span></div>
+            <button type="button" class="demo-btn" onclick="directLogin('citizen')">
+              ⚡ Quick 1-Click Citizen Demo
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- STAGE 3: AUTHORITY LOGIN PAGE -->
+      <div id="authority-login-view" class="login-page-view">
+        <button class="back-nav-btn" onclick="backToPortalSelect()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Back to Portals
+        </button>
+
+        <div class="login-form-card authority-login-card">
+          <div class="login-form-head">
+            <div class="login-form-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <h2>Authority Login</h2>
+            <p>Restricted Command Center Access</p>
+          </div>
+
+          <div id="authority-status-msg" style="display:none;" class="success"></div>
+
+          <form onsubmit="handleLoginSubmit(event, 'authority')">
+            <div class="input-group">
+              <label>Officer ID</label>
+              <input type="text" id="authority-id" class="input-field" placeholder="e.g. OFF-9482" value="OFF-9482"
+                required />
+            </div>
+            <div class="input-group">
+              <label>Department</label>
+              <select class="input-field" id="authority-dept">
+                <option value="Municipal Public Works">Municipal Public Works</option>
+                <option value="Police & Community Safety">Police & Community Safety</option>
+                <option value="Disaster & Flood Management">Disaster & Flood Management</option>
+                <option value="Electrical & Power Grid">Electrical & Power Grid</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Domain</label>
+              <input type="text" id="authority-domain" class="input-field" placeholder="e.g. Roads, Water Supply, Electrical Grid" value="Roads & Public Infrastructure" required />
+            </div>
+            <div class="input-group">
+              <label>Passcode / Security PIN</label>
+              <input type="password" class="input-field" placeholder="••••••••" value="authority2026" required />
+            </div>
+            <button type="submit" class="submit-btn authority-btn">
+              Authorize Command Center
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+            <div class="divider"><span>OR</span></div>
+            <button type="button" class="demo-btn" onclick="directLogin('authority')">
+              ⚡ Quick 1-Click Authority Demo
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- React root container for CivicPulse application -->
+  <div id="root"></div>
+
+  <script>
+    // When a particular box is clicked, open its dedicated login page
+    function openLoginPage(role) {
+      document.getElementById('portal-select-view').style.display = 'none';
+      if (role === 'citizen') {
+        document.getElementById('citizen-login-view').classList.add('active');
+        document.getElementById('authority-login-view').classList.remove('active');
+      } else {
+        document.getElementById('authority-login-view').classList.add('active');
+        document.getElementById('citizen-login-view').classList.remove('active');
+      }
+    }
+
+    // Return back to the two boxes selection
+    function backToPortalSelect() {
+      document.getElementById('citizen-login-view').classList.remove('active');
+      document.getElementById('authority-login-view').classList.remove('active');
+      document.getElementById('portal-select-view').style.display = 'flex';
+    }
+
+    function handleLoginSubmit(event, role) {
+      event.preventDefault();
+      directLogin(role);
+    }
+
+    // Transition to the Home Page
+    function directLogin(role) {
+      if (role === 'authority') {
+        const domainVal = document.getElementById('authority-domain')?.value;
+        if (domainVal) {
+          localStorage.setItem('civicpulse_authority_domain', domainVal);
+        }
+      }
+
+      const msgId = role === 'authority' ? 'authority-status-msg' : 'citizen-status-msg';
+      const statusMsg = document.getElementById(msgId);
+      if (statusMsg) {
+        statusMsg.style.display = 'block';
+        statusMsg.style.padding = '10px';
+        statusMsg.style.borderRadius = '8px';
+        statusMsg.style.marginBottom = '14px';
+        statusMsg.style.background = 'rgba(54, 213, 180, 0.15)';
+        statusMsg.style.border = '1px solid #36d5b4';
+        statusMsg.style.color = '#36d5b4';
+        statusMsg.style.fontSize = '12px';
+        statusMsg.style.textAlign = 'center';
+        const domainStr = (role === 'authority' && document.getElementById('authority-domain')?.value) 
+          ? ' (' + document.getElementById('authority-domain').value + ')' 
+          : '';
+        statusMsg.innerHTML = '✔ Verified! Directing to ' + (role === 'authority' ? 'Authority Command Center' : 'Citizen Home Page') + domainStr + '...';
+      }
+
+      function triggerReactLogin() {
+        const portalClass = role === 'authority' ? '.authorityPortal' : '.citizenPortal';
+        const portalCard = document.querySelector(portalClass);
+
+        if (portalCard) {
+          portalCard.click();
+          setTimeout(() => {
+            const themeClass = role === 'authority' ? '.authorityTheme' : '.citizenTheme';
+            const loginBtn = document.querySelector(themeClass + ' .loginBtn') ||
+              document.querySelector(themeClass + ' .demoBtn');
+            if (loginBtn) {
+              loginBtn.click();
+            }
+          }, 60);
+        } else {
+          const themeClass = role === 'authority' ? '.authorityTheme' : '.citizenTheme';
+          const loginBtn = document.querySelector(themeClass + ' .loginBtn') ||
+            document.querySelector(themeClass + ' .demoBtn');
+          if (loginBtn) {
+            loginBtn.click();
+          }
+        }
+
+        // Smoothly hide login overlay
+        setTimeout(() => {
+          const overlay = document.getElementById('civicpulse-login-overlay');
+          if (overlay) overlay.classList.add('hidden');
+        }, 350);
+      }
+
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        const portalClass = role === 'authority' ? '.authorityPortal' : '.citizenPortal';
+        if (document.querySelector(portalClass) || attempts > 20) {
+          clearInterval(interval);
+          triggerReactLogin();
+        }
+      }, 50);
+    }
+
+    // If user clicks "Logout" inside the app, restore the portal select screen
+    const observer = new MutationObserver(() => {
+      const portalGrid = document.querySelector('.portalGrid');
+      const overlay = document.getElementById('civicpulse-login-overlay');
+      if (portalGrid && overlay && overlay.classList.contains('hidden')) {
+        overlay.classList.remove('hidden');
+        backToPortalSelect();
+      }
+    });
+    observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+  </script>
+
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>
